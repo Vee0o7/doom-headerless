@@ -20,8 +20,7 @@
 #ifndef __DOOMDEF__
 #define __DOOMDEF__
 
-#include <stdio.h>
-#include <string.h>
+#include "include.h"
 
 #include "doomtype.h"
 #include "i_timer.h"
@@ -39,7 +38,7 @@
 
 // If rangecheck is undefined,
 // most parameter validation debugging code will not be compiled
-#define RANGECHECK
+//#define RANGECHECK
 
 // The maximum number of players, multiplayer/networking.
 #define MAXPLAYERS 4
@@ -66,7 +65,6 @@ typedef enum
     ga_completed,
     ga_victory,
     ga_worlddone,
-    ga_screenshot
 } gameaction_t;
 
 //

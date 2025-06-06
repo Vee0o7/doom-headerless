@@ -19,8 +19,6 @@
 
 
 
-#include <math.h>
-
 #include "z_zone.h"
 
 #include "deh_main.h"
@@ -99,17 +97,6 @@ mobj_t**	blocklinks;
 //  used as a PVS lookup as well.
 //
 byte*		rejectmatrix;
-
-
-// Maintain single and multi player starting spots.
-#define MAX_DEATHMATCH_STARTS	10
-
-mapthing_t	deathmatchstarts[MAX_DEATHMATCH_STARTS];
-mapthing_t*	deathmatch_p;
-mapthing_t	playerstarts[MAXPLAYERS];
-
-
-
 
 
 //
@@ -691,7 +678,7 @@ static void PadRejectArray(byte *array, unsigned int len)
 
     if (len > sizeof(rejectpad))
     {
-        fprintf(stderr, "PadRejectArray: REJECT lump too short to pad! (%i > %i)\n",
+        I_NonfatalError("PadRejectArray: REJECT lump too short to pad! (%i > %i)\n",
                         len, (int) sizeof(rejectpad));
 
         // Pad remaining space with 0 (or 0xff, if specified on command line).
@@ -774,10 +761,9 @@ P_SetupLevel
     // find map name
     if ( gamemode == commercial)
     {
-	if (map<10)
-	    DEH_snprintf(lumpname, 9, "map0%i", map);
-	else
-	    DEH_snprintf(lumpname, 9, "map%i", map);
+        char* b;
+        b = sprint_str(lumpname, "map");
+        b = sprint_int(b, map, 2);
     }
     else
     {
@@ -807,20 +793,7 @@ P_SetupLevel
     P_LoadReject (lumpnum+ML_REJECT);
 
     bodyqueslot = 0;
-    deathmatch_p = deathmatchstarts;
     P_LoadThings (lumpnum+ML_THINGS);
-    
-    // if deathmatch, randomly spawn the active players
-    if (deathmatch)
-    {
-	for (i=0 ; i<MAXPLAYERS ; i++)
-	    if (playeringame[i])
-	    {
-		players[i].mo = NULL;
-		G_DeathMatchSpawnPlayer (i);
-	    }
-			
-    }
 
     // clear special respawning que
     iquehead = iquetail = 0;		
@@ -835,7 +808,7 @@ P_SetupLevel
     if (precache)
 	R_PrecacheLevel ();
 
-    //printf ("free memory: 0x%x\n", Z_FreeMemory());
+    //I_Info ("free memory: 0x%x\n", Z_FreeMemory());
 
 }
 

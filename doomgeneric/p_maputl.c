@@ -21,8 +21,7 @@
 //
 
 
-
-#include <stdlib.h>
+#include "include.h"
 
 
 #include "m_bbox.h"
@@ -766,7 +765,7 @@ static intercepts_overrun_t intercepts_overrun[] =
     {4,   NULL, /* &swingx, */           false},
     {4,   NULL, /* &swingy, */           false},
     {4,   NULL,                          false},
-    {40,  &playerstarts,                 true},
+    {40,  NULL,                 true},
     {4,   NULL, /* &blocklinks, */       false},
     {4,   &bmapwidth,                    false},
     {4,   NULL, /* &blockmap, */         false},

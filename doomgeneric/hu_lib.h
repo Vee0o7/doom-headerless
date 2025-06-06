@@ -168,12 +168,6 @@ HUlib_addPrefixToIText
 ( hu_itext_t*	it,
   char*		str );
 
-// whether eaten
-boolean
-HUlib_keyInIText
-( hu_itext_t*	it,
-  unsigned char ch );
-
 void HUlib_drawIText(hu_itext_t* it);
 
 // erases all itext lines

@@ -21,8 +21,7 @@
 
 
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "include.h"
 
 #include "i_system.h"
 

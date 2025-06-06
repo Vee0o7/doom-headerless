@@ -18,9 +18,7 @@
 //
 
 
-#include <stdlib.h>
-
-
+#include "include.h"
 #include "doomtype.h"
 #include "sounds.h"
 

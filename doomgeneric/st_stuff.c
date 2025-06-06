@@ -20,8 +20,6 @@
 
 
 
-#include <stdio.h>
-
 #include "i_system.h"
 #include "i_video.h"
 #include "z_zone.h"
@@ -149,10 +147,6 @@
 #define ST_ARMSXSPACE		12
 #define ST_ARMSYSPACE		10
 
-// Frags pos.
-#define ST_FRAGSX			138
-#define ST_FRAGSY			171	
-#define ST_FRAGSWIDTH		2
 
 // ARMOR number pos.
 #define ST_ARMORWIDTH		3
@@ -301,9 +295,6 @@ static boolean		st_notdeathmatch;
 // !deathmatch && st_statusbaron
 static boolean		st_armson;
 
-// !deathmatch
-static boolean		st_fragson; 
-
 // main bar left
 static patch_t*		sbar;
 
@@ -334,9 +325,6 @@ static patch_t*		arms[6][2];
 // ready-weapon widget
 static st_number_t	w_ready;
 
- // in deathmatch only, summary of frags stats
-static st_number_t	w_frags;
-
 // health widget
 static st_percent_t	w_health;
 
@@ -363,9 +351,6 @@ static st_number_t	w_ammo[4];
 static st_number_t	w_maxammo[4]; 
 
 
-
- // number of frags so far in deathmatch
-static int	st_fragscount;
 
 // used to use appopriately pained face
 static int	st_oldhealth = -1;
@@ -420,14 +405,11 @@ void ST_refreshBackground(void)
     {
         V_UseBuffer(st_backing_screen);
 
-	V_DrawPatch(ST_X, 0, sbar);
-
-	if (netgame)
-	    V_DrawPatch(ST_FX, 0, faceback);
+	V_DrawPatchDiv2All(ST_X, 0, sbar);
 
         V_RestoreBuffer();
 
-	V_CopyRect(ST_X, 0, st_backing_screen, ST_WIDTH, ST_HEIGHT, ST_X, ST_Y);
+	V_CopyRectDiv2All(ST_X, 0, st_backing_screen, ST_WIDTH, ST_HEIGHT, ST_X, ST_Y);
     }
 
 }
@@ -452,7 +434,6 @@ ST_Responder (event_t* ev)
 	break;
 	
       case AM_MSGEXITED:
-	//	fprintf(stderr, "AM exited\n");
 	st_gamestate = FirstPersonState;
 	break;
     }
@@ -461,7 +442,7 @@ ST_Responder (event_t* ev)
   // if a user keypress...
   else if (ev->type == ev_keydown)
   {
-    if (!netgame && gameskill != sk_nightmare)
+    if (gameskill != sk_nightmare)
     {
       // 'dqd' cheat for toggleable god mode
       if (cht_CheckCheat(&cheat_god, ev->data2))
@@ -590,17 +571,12 @@ ST_Responder (event_t* ev)
       // 'mypos' for player position
       else if (cht_CheckCheat(&cheat_mypos, ev->data2))
       {
-        static char buf[ST_MSGWIDTH];
-        M_snprintf(buf, sizeof(buf), "ang=0x%x;x,y=(0x%x,0x%x)",
-                   players[consoleplayer].mo->angle,
-                   players[consoleplayer].mo->x,
-                   players[consoleplayer].mo->y);
-        plyr->message = buf;
+        plyr->message = "ang=0x--;x,y=(0x--,0x--)";
       }
     }
     
     // 'clev' change-level cheat
-    if (!netgame && cht_CheckCheat(&cheat_clev, ev->data2))
+    if (cht_CheckCheat(&cheat_clev, ev->data2))
     {
       char		buf[3];
       int		epsd;
@@ -898,22 +874,10 @@ void ST_updateWidgets(void)
     ST_updateFaceWidget();
 
     // used by the w_armsbg widget
-    st_notdeathmatch = !deathmatch;
+    st_notdeathmatch = true;
     
     // used by w_arms[] widgets
-    st_armson = st_statusbaron && !deathmatch; 
-
-    // used by w_frags widget
-    st_fragson = deathmatch && st_statusbaron; 
-    st_fragscount = 0;
-
-    for (i=0 ; i<MAXPLAYERS ; i++)
-    {
-	if (i != consoleplayer)
-	    st_fragscount += plyr->frags[i];
-	else
-	    st_fragscount -= plyr->frags[i];
-    }
+    st_armson = st_statusbaron; 
 
     // get rid of chat window if up because of message
     if (!--st_msgcounter)
@@ -1003,10 +967,7 @@ void ST_drawWidgets(boolean refresh)
     int		i;
 
     // used by w_arms[] widgets
-    st_armson = st_statusbaron && !deathmatch;
-
-    // used by w_frags widget
-    st_fragson = deathmatch && st_statusbaron; 
+    st_armson = st_statusbaron;
 
     STlib_updateNum(&w_ready, refresh);
 
@@ -1028,8 +989,6 @@ void ST_drawWidgets(boolean refresh)
 
     for (i=0;i<3;i++)
 	STlib_updateMultIcon(&w_keyboxes[i], refresh);
-
-    STlib_updateNum(&w_frags, refresh);
 
 }
 
@@ -1081,14 +1040,17 @@ static void ST_loadUnloadGraphics(load_callback_t callback)
     int		facenum;
     
     char	namebuf[9];
+    char*	b;
 
     // Load the numbers, tall and short
     for (i=0;i<10;i++)
     {
-	DEH_snprintf(namebuf, 9, "STTNUM%d", i);
+        b = sprint_str(namebuf, "STTNUM");
+        b = sprint_int(b, i, 0);
         callback(namebuf, &tallnum[i]);
 
-	DEH_snprintf(namebuf, 9, "STYSNUM%d", i);
+        b = sprint_str(namebuf, "STYSNUM");
+        b = sprint_int(b, i, 0);
         callback(namebuf, &shortnum[i]);
     }
 
@@ -1100,7 +1062,8 @@ static void ST_loadUnloadGraphics(load_callback_t callback)
     // key cards
     for (i=0;i<NUMCARDS;i++)
     {
-    	DEH_snprintf(namebuf, 9, "STKEYS%d", i);
+        b = sprint_str(namebuf, "STKEYS");
+        b = sprint_int(b, i, 0);
         callback(namebuf, &keys[i]);
     }
 
@@ -1110,7 +1073,8 @@ static void ST_loadUnloadGraphics(load_callback_t callback)
     // arms ownership widgets
     for (i=0; i<6; i++)
     {
-    	DEH_snprintf(namebuf, 9, "STGNUM%d", i+2);
+        b = sprint_str(namebuf, "STGNUM");
+        b = sprint_int(b, i+2, 0);
 
     	// gray #
         callback(namebuf, &arms[i][0]);
@@ -1120,7 +1084,8 @@ static void ST_loadUnloadGraphics(load_callback_t callback)
     }
 
     // face backgrounds for different color players
-    DEH_snprintf(namebuf, 9, "STFB%d", consoleplayer);
+    b = sprint_str(namebuf, "STFB");
+    b = sprint_int(b, consoleplayer, 0);
     callback(namebuf, &faceback);
 
     // status bar background bits
@@ -1132,23 +1097,32 @@ static void ST_loadUnloadGraphics(load_callback_t callback)
     {
 	for (j=0; j<ST_NUMSTRAIGHTFACES; j++)
 	{
-	    DEH_snprintf(namebuf, 9, "STFST%d%d", i, j);
+    b = sprint_str(namebuf, "STFST");
+    b = sprint_int(b, i, 0);
+    b = sprint_int(b, j, 0);
             callback(namebuf, &faces[facenum]);
             ++facenum;
 	}
-	DEH_snprintf(namebuf, 9, "STFTR%d0", i);	// turn right
+    b = sprint_str(namebuf, "STFTR");	// turn right
+    b = sprint_int(b, i, 0);
+    b = sprint_str(b, "0");
         callback(namebuf, &faces[facenum]);
         ++facenum;
-	DEH_snprintf(namebuf, 9, "STFTL%d0", i);	// turn left
+    b = sprint_str(namebuf, "STFTL");	// turn left
+    b = sprint_int(b, i, 0);
+    b = sprint_str(b, "0");
         callback(namebuf, &faces[facenum]);
         ++facenum;
-	DEH_snprintf(namebuf, 9, "STFOUCH%d", i);	// ouch!
+    b = sprint_str(namebuf, "STFOUCH");
+    b = sprint_int(b, i, 0);
         callback(namebuf, &faces[facenum]);
         ++facenum;
-	DEH_snprintf(namebuf, 9, "STFEVL%d", i);	// evil grin ;)
+    b = sprint_str(namebuf, "STFEVL");
+    b = sprint_int(b, i, 0);
         callback(namebuf, &faces[facenum]);
         ++facenum;
-	DEH_snprintf(namebuf, 9, "STFKILL%d", i);	// pissed off
+    b = sprint_str(namebuf, "STFKILL");
+    b = sprint_int(b, i, 0);
         callback(namebuf, &faces[facenum]);
         ++facenum;
     }
@@ -1267,15 +1241,6 @@ void ST_createWidgets(void)
 			   arms[i], (int *) &plyr->weaponowned[i+1],
 			   &st_armson);
     }
-
-    // frags sum
-    STlib_initNum(&w_frags,
-		  ST_FRAGSX,
-		  ST_FRAGSY,
-		  tallnum,
-		  &st_fragscount,
-		  &st_fragson,
-		  ST_FRAGSWIDTH);
 
     // faces
     STlib_initMultIcon(&w_faces,

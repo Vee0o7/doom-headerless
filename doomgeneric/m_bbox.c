@@ -19,8 +19,7 @@
 //	PCX Screenshots.
 //
 
-
-
+#include "include.h"
 #include "m_bbox.h"
 
 

@@ -18,8 +18,7 @@
 //	that are associated with states/frames. 
 //
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "include.h"
 
 #include "m_random.h"
 #include "i_system.h"
@@ -736,15 +735,6 @@ void A_Chase (mobj_t*	actor)
 
     // ?
   nomissile:
-    // possibly choose another target
-    if (netgame
-	&& !actor->threshold
-	&& !P_CheckSight (actor, actor->target) )
-    {
-	if (P_LookForPlayers(actor,true))
-	    return;	// got a new target
-    }
-    
     // chase towards player
     if (--actor->movecount<0
 	|| !P_Move (actor))

@@ -123,7 +123,7 @@ void I_InitWindowTitle(void);
 void I_InitWindowIcon(void);
 
 // Called before processing any tics in a frame (just after displaying a frame).
-// Time consuming syncronous operations are performed here (joystick reading).
+// Time consuming syncronous operations are performed here.
 
 void I_StartFrame (void);
 
@@ -149,7 +149,7 @@ struct color {
 extern char *video_driver;
 extern boolean screenvisible;
 
-extern float mouse_acceleration;
+extern int mouse_acceleration;
 extern int mouse_threshold;
 extern int vanilla_keyboard_mapping;
 extern boolean screensaver_mode;
@@ -168,8 +168,31 @@ extern int diskicon_readbytes;
 #ifdef CMAP256
 
 extern boolean palette_changed;
-extern struct color colors[256];
 
 #endif  // CMAP256
+
+extern struct color colors[256];
+
+struct FB_BitField
+{
+	uint32_t offset;			/* beginning of bitfield	*/
+	uint32_t length;			/* length of bitfield		*/
+};
+
+struct FB_ScreenInfo
+{
+	uint32_t xres;			/* visible resolution		*/
+	uint32_t yres;
+	uint32_t xres_virtual;		/* virtual resolution		*/
+	uint32_t yres_virtual;
+
+	uint32_t bits_per_pixel;		/* guess what			*/
+
+							/* >1 = FOURCC			*/
+	struct FB_BitField red;		/* bitfield in s_Fb mem if true color, */
+	struct FB_BitField green;	/* else only length is significant */
+	struct FB_BitField blue;
+	struct FB_BitField transp;	/* transparency			*/
+};
 
 #endif

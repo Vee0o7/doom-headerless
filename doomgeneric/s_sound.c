@@ -15,13 +15,11 @@
 // DESCRIPTION:  none
 //
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "include.h"
 
 #include "i_sound.h"
 #include "i_system.h"
 
-#include "doomfeatures.h"
 #include "deh_str.h"
 
 #include "doomstat.h"
@@ -633,7 +631,9 @@ void S_ChangeMusic(int musicnum, int looping)
     // get lumpnum if neccessary
     if (!music->lumpnum)
     {
-        M_snprintf(namebuf, sizeof(namebuf), "d_%s", DEH_String(music->name));
+        char* b;
+        b = sprint_str(namebuf, "d_");
+        b = sprint_str(b, DEH_String(music->name));
         music->lumpnum = W_GetNumForName(namebuf);
     }
 

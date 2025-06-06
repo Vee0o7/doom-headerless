@@ -34,7 +34,6 @@ typedef enum
     ev_keydown,
     ev_keyup,
     ev_mouse,
-    ev_joystick,
     ev_quit
 } evtype_t;
 
@@ -58,13 +57,8 @@ typedef struct
     //    data2: X axis mouse movement (turn).
     //    data3: Y axis mouse movement (forward/backward).
     //
-    // ev_joystick:
-    //    data1: Bitfield of buttons currently pressed.
-    //    data2: X axis mouse movement (turn).
-    //    data3: Y axis mouse movement (forward/backward).
-    //    data4: Third axis mouse movement (strafe).
 
-    int data1, data2, data3, data4;
+    int data1, data2, data3;
 } event_t;
 
  

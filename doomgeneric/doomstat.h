@@ -56,10 +56,6 @@ extern  boolean	devparm;	// DEBUG: launched with -devparm
 extern GameMode_t	gamemode;
 extern GameMission_t	gamemission;
 extern GameVersion_t    gameversion;
-extern char            *gamedescription;
-
-// If true, we're using one of the mangled BFG edition IWADs.
-extern boolean bfgedition;
 
 // Convenience macro.
 // 'gamemission' can be equal to pack_chex or pack_hacx, but these are
@@ -100,12 +96,6 @@ extern  int             timelimit;
 
 // Nightmare mode flag, single player.
 extern  boolean         respawnmonsters;
-
-// Netgame? Only true if >1 player.
-extern  boolean	netgame;
-
-// 0=Cooperative; 1=Deathmatch; 2=Altdeath
-extern int deathmatch;
 
 // -------------------------
 // Internal parameters for sound rendering.
@@ -222,11 +212,6 @@ extern	player_t	players[MAXPLAYERS];
 // Alive? Disconnected?
 extern  boolean		playeringame[MAXPLAYERS];
 
-
-// Player spawn spots for deathmatch.
-#define MAX_DM_STARTS   10
-extern  mapthing_t      deathmatchstarts[MAX_DM_STARTS];
-extern  mapthing_t*	deathmatch_p;
 
 // Player spawn spots.
 extern  mapthing_t      playerstarts[MAXPLAYERS];

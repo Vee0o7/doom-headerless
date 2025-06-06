@@ -16,9 +16,7 @@
 //	Game completion, final screen animation.
 //
 
-
-#include <stdio.h>
-#include <ctype.h>
+#include "include.h"
 
 // Functions.
 #include "deh_main.h"
@@ -286,7 +284,7 @@ void F_TextWrite (void)
 	w = SHORT (hu_font[c]->width);
 	if (cx+w > SCREENWIDTH)
 	    break;
-	V_DrawPatch(cx, cy, hu_font[c]);
+	V_DrawPatchDiv2All(cx, cy, hu_font[c]);
 	cx+=w;
     }
 	
@@ -527,7 +525,7 @@ void F_CastPrint (char* text)
 	}
 		
 	w = SHORT (hu_font[c]->width);
-	V_DrawPatch(cx, 180, hu_font[c]);
+	V_DrawPatchDiv2All(cx, 180, hu_font[c]);
 	cx+=w;
     }
 	
@@ -547,7 +545,7 @@ void F_CastDrawer (void)
     patch_t*		patch;
     
     // erase the entire screen to a background
-    V_DrawPatch (0, 0, W_CacheLumpName (DEH_String("BOSSBACK"), PU_CACHE));
+    V_DrawPatchDiv2All (0, 0, W_CacheLumpName (DEH_String("BOSSBACK"), PU_CACHE));
 
     F_CastPrint (DEH_String(castorder[castnum].name));
     
@@ -559,9 +557,9 @@ void F_CastDrawer (void)
 			
     patch = W_CacheLumpNum (lump+firstspritelump, PU_CACHE);
     if (flip)
-	V_DrawPatchFlipped(160, 170, patch);
+	V_DrawPatchDiv2All(160, 170, patch);
     else
-	V_DrawPatch(160, 170, patch);
+	V_DrawPatchDiv2All(160, 170, patch);
 }
 
 
@@ -652,7 +650,9 @@ void F_BunnyScroll (void)
 	laststage = stage;
     }
 	
-    DEH_snprintf(name, 10, "END%i", stage);
+    char* b;
+    b = sprint_str(name, "END");
+    b = sprint_int(b, stage, 0);
     V_DrawPatch((SCREENWIDTH - 13 * 8) / 2, 
                 (SCREENHEIGHT - 8 * 8) / 2, 
                 W_CacheLumpName (name,PU_CACHE));

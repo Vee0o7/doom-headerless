@@ -225,7 +225,6 @@ void R_DrawColumnLow (void)
 	|| dc_yl < 0
 	|| dc_yh >= SCREENHEIGHT)
     {
-	
 	I_Error ("R_DrawColumn: %i to %i at %i", dc_yl, dc_yh, dc_x);
     }
     //	dccount++; 
@@ -325,7 +324,7 @@ void R_DrawFuzzColumn (void)
 	//  a pixel that is either one column
 	//  left or right of the current one.
 	// Add index from colormap to index.
-	*dest = colormaps[6*256+dest[fuzzoffset[fuzzpos]]]; 
+	*dest = colormaps[6*256+dest[fuzzoffset[fuzzpos]]];
 
 	// Clamp table lookup index.
 	if (++fuzzpos == FUZZTABLE) 
@@ -787,7 +786,7 @@ R_InitBuffer
 
     // Column offset. For windows.
     for (i=0 ; i<width ; i++) 
-	columnofs[i] = viewwindowx + i;
+	columnofs[i] =  i;
 
     // Samw with base row offset.
     if (width == SCREENWIDTH) 
@@ -797,7 +796,7 @@ R_InitBuffer
 
     // Preclaculate all row offsets.
     for (i=0 ; i<height ; i++) 
-	ylookup[i] = I_VideoBuffer + (i+viewwindowy)*SCREENWIDTH; 
+	ylookup[i] = I_VideoBuffer + (i)*SCREENWIDTH; 
 } 
  
  
@@ -811,6 +810,9 @@ R_InitBuffer
 //
 void R_FillBackScreen (void) 
 { 
+#ifdef DIV2
+    return;
+#endif
     byte*	src;
     byte*	dest; 
     int		x;
@@ -853,6 +855,9 @@ void R_FillBackScreen (void)
 	name = name1;
     
     src = W_CacheLumpName(name, PU_CACHE); 
+    for (size_t i = 0; i < 64 * 64; ++i) {
+        src[i] = palette_map[src[i]];
+    }
     dest = background_buffer;
 	 
     for (y=0 ; y<SCREENHEIGHT-SBARHEIGHT ; y++) 
@@ -872,6 +877,7 @@ void R_FillBackScreen (void)
      
     // Draw screen and bezel; this is done to a separate screen buffer.
 
+    return;
     V_UseBuffer(background_buffer);
 
     patch = W_CacheLumpName(DEH_String("brdr_t"),PU_CACHE);
@@ -940,31 +946,35 @@ R_VideoErase
 //
 void R_DrawViewBorder (void) 
 { 
-    int		top;
-    int		side;
+#ifdef DIV2
+    return;
+#endif
+    int		top, bottom;
+    int		sidel, sider;
     int		ofs;
     int		i; 
  
     if (scaledviewwidth == SCREENWIDTH) 
 	return; 
   
-    top = ((SCREENHEIGHT-SBARHEIGHT)-viewheight)/2; 
-    side = (SCREENWIDTH-scaledviewwidth)/2; 
+    top = 0; //((SCREENHEIGHT-SBARHEIGHT)-viewheight)/2; 
+    bottom = ((SCREENHEIGHT-SBARHEIGHT)-viewheight); 
+    sidel = 0;
+    sider = SCREENWIDTH-scaledviewwidth; 
  
     // copy top and one line of left side 
-    R_VideoErase (0, top*SCREENWIDTH+side); 
+    R_VideoErase (0, top*SCREENWIDTH+sidel); 
  
     // copy one line of right side and bottom 
-    ofs = (viewheight+top)*SCREENWIDTH-side; 
-    R_VideoErase (ofs, top*SCREENWIDTH+side); 
+    ofs = (viewheight+top)*SCREENWIDTH-sider; 
+    R_VideoErase (ofs, bottom*SCREENWIDTH+sider); 
  
     // copy sides using wraparound 
-    ofs = top*SCREENWIDTH + SCREENWIDTH-side; 
-    side <<= 1;
+    ofs = top*SCREENWIDTH + SCREENWIDTH-sider; 
     
     for (i=1 ; i<viewheight ; i++) 
     { 
-	R_VideoErase (ofs, side); 
+	R_VideoErase (ofs, sidel + sider);
 	ofs += SCREENWIDTH; 
     } 
 

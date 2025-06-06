@@ -18,9 +18,7 @@
 //	Moreover, the sky areas have to be determined.
 //
 
-
-#include <stdio.h>
-#include <stdlib.h>
+#include "include.h"
 
 #include "i_system.h"
 #include "z_zone.h"

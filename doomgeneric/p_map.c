@@ -17,8 +17,7 @@
 //	Shooting and aiming.
 //
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "include.h"
 
 #include "deh_misc.h"
 
@@ -1395,29 +1394,7 @@ static void SpechitOverrun(line_t *ld)
    
     if (baseaddr == 0)
     {
-        int p;
-
-        // This is the first time we have had an overrun.  Work out
-        // what base address we are going to use.
-        // Allow a spechit value to be specified on the command line.
-
-        //!
-        // @category compat
-        // @arg <n>
-        //
-        // Use the specified magic value when emulating spechit overruns.
-        //
-
-        p = M_CheckParmWithArgs("-spechit", 1);
-        
-        if (p > 0)
-        {
-            M_StrToInt(myargv[p+1], (int *) &baseaddr);
-        }
-        else
-        {
-            baseaddr = DEFAULT_SPECHIT_MAGIC;
-        }
+        baseaddr = DEFAULT_SPECHIT_MAGIC;
     }
     
     // Calculate address used in doom2.exe
@@ -1439,7 +1416,7 @@ static void SpechitOverrun(line_t *ld)
             nofit = addr; 
             break;
         default:
-            fprintf(stderr, "SpechitOverrun: Warning: unable to emulate"
+            I_NonfatalError("SpechitOverrun: Warning: unable to emulate"
                             "an overrun where numspechit=%i\n",
                             numspechit);
             break;

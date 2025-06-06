@@ -79,16 +79,6 @@ void P_RemoveThinker (thinker_t* thinker)
 
 
 //
-// P_AllocateThinker
-// Allocates memory and adds a new thinker at the end of the list.
-//
-void P_AllocateThinker (thinker_t*	thinker)
-{
-}
-
-
-
-//
 // P_RunThinkers
 //
 void P_RunThinkers (void)
@@ -129,8 +119,7 @@ void P_Ticker (void)
 	return;
 		
     // pause if in menu and at least one tic has been run
-    if ( !netgame
-	 && menuactive
+    if (menuactive
 	 && !demoplayback
 	 && players[consoleplayer].viewz != 1)
     {
@@ -144,7 +133,6 @@ void P_Ticker (void)
 			
     P_RunThinkers ();
     P_UpdateSpecials ();
-    P_RespawnSpecials ();
 
     // for par times
     leveltime++;	

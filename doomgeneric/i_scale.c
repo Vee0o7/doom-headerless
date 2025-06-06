@@ -18,9 +18,7 @@
 //         Aspect ratio-correcting stretch functions
 //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "include.h"
 
 #include "doomtype.h"
 
@@ -374,12 +372,10 @@ static void I_InitStretchTables(byte *palette)
     // mix 80%  =  stretch_tables[0] used backwards
     // mix 100% =  just write line 2
 
-    printf("I_InitStretchTables: Generating lookup tables..");
-    fflush(stdout);
+    I_Info("I_InitStretchTables: Generating lookup tables..");
     stretch_tables[0] = GenerateStretchTable(palette, 20);
-    printf(".."); fflush(stdout);
+    I_Info("..");
     stretch_tables[1] = GenerateStretchTable(palette, 40);
-    puts("");
 }
 
 // Create 50%/50% table for 800x600 squash mode
@@ -391,10 +387,8 @@ static void I_InitSquashTable(byte *palette)
         return;
     }
 
-    printf("I_InitSquashTable: Generating lookup table..");
-    fflush(stdout);
+    I_Info("I_InitSquashTable: Generating lookup table..");
     half_stretch_table = GenerateStretchTable(palette, 50);
-    puts("");
 }
 
 // Destroy the scaling lookup tables. This should only ever be called
@@ -408,7 +402,7 @@ void I_ResetScaleTables(byte *palette)
         Z_Free(stretch_tables[0]);
         Z_Free(stretch_tables[1]);
 
-        printf("I_ResetScaleTables: Regenerating lookup tables..\n");
+        I_Info("I_ResetScaleTables: Regenerating lookup tables..\n");
         stretch_tables[0] = GenerateStretchTable(palette, 20);
         stretch_tables[1] = GenerateStretchTable(palette, 40);
     }
@@ -417,7 +411,7 @@ void I_ResetScaleTables(byte *palette)
     {
         Z_Free(half_stretch_table);
 
-        printf("I_ResetScaleTables: Regenerating lookup table..\n");
+        I_Info("I_ResetScaleTables: Regenerating lookup table..\n");
 
         half_stretch_table = GenerateStretchTable(palette, 50);
     }

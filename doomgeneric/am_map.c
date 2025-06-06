@@ -17,7 +17,7 @@
 //
 
 
-#include <stdio.h>
+#include "include.h"
 
 #include "deh_main.h"
 
@@ -267,26 +267,6 @@ cheatseq_t cheat_amap = CHEAT("iddt", 0);
 
 static boolean stopped = true;
 
-// Calculates the slope and slope according to the x-axis of a line
-// segment in map coordinates (with the upright y-axis n' all) so
-// that it can be used with the brain-dead drawing stuff.
-
-void
-AM_getIslope
-( mline_t*	ml,
-  islope_t*	is )
-{
-    int dx, dy;
-
-    dy = ml->a.y - ml->b.y;
-    dx = ml->b.x - ml->a.x;
-    if (!dy) is->islp = (dx<0?-INT_MAX:INT_MAX);
-    else is->islp = FixedDiv(dx, dy);
-    if (!dx) is->slp = (dy<0?-INT_MAX:INT_MAX);
-    else is->slp = FixedDiv(dy, dx);
-
-}
-
 //
 //
 //
@@ -484,7 +464,9 @@ void AM_loadPics(void)
   
     for (i=0;i<10;i++)
     {
-	DEH_snprintf(namebuf, 9, "AMMNUM%d", i);
+        char* b;
+        b = sprint_str(namebuf, "AMMNUM");
+        b = sprint_int(b, i, 0);
 	marknums[i] = W_CacheLumpName(namebuf, PU_STATIC);
     }
 
@@ -497,7 +479,9 @@ void AM_unloadPics(void)
   
     for (i=0;i<10;i++)
     {
-	DEH_snprintf(namebuf, 9, "AMMNUM%d", i);
+        char* b;
+        b = sprint_str(namebuf, "AMMNUM");
+        b = sprint_int(b, i, 0);
 	W_ReleaseLumpName(namebuf);
     }
 }
@@ -682,8 +666,10 @@ AM_Responder
         }
         else if (key == key_map_mark)
         {
-            M_snprintf(buffer, sizeof(buffer), "%s %d",
-                       DEH_String(AMSTR_MARKEDSPOT), markpointnum);
+            char* b;
+            b = sprint_str(buffer, DEH_String(AMSTR_MARKEDSPOT));
+            b = sprint_str(b, " ");
+            b = sprint_int(b, markpointnum, 0);
             plr->message = buffer;
             AM_addMark();
         }
@@ -697,7 +683,7 @@ AM_Responder
             rc = false;
         }
 
-	if (!deathmatch && cht_CheckCheat(&cheat_amap, ev->data2))
+	if (cht_CheckCheat(&cheat_amap, ev->data2))
 	{
 	    rc = false;
 	    cheating = (cheating+1) % 3;
@@ -778,27 +764,6 @@ void AM_doFollowPlayer(void)
     }
 
 }
-
-//
-//
-//
-void AM_updateLightLev(void)
-{
-    static int nexttic = 0;
-    //static int litelevels[] = { 0, 3, 5, 6, 6, 7, 7, 7 };
-    static int litelevels[] = { 0, 4, 7, 10, 12, 14, 15, 15 };
-    static int litelevelscnt = 0;
-   
-    // Change light level
-    if (amclock>nexttic)
-    {
-	lightlev = litelevels[litelevelscnt++];
-	if (litelevelscnt == arrlen(litelevels)) litelevelscnt = 0;
-	nexttic = amclock + 6 - (amclock % 6);
-    }
-
-}
-
 
 //
 // Updates on Game Tick
@@ -995,6 +960,7 @@ AM_drawFline
     register int ay;
     register int d;
     
+		/*
     static int fuck = 0;
 
     // For debugging only
@@ -1003,11 +969,11 @@ AM_drawFline
 	   || fl->b.x < 0 || fl->b.x >= f_w
 	   || fl->b.y < 0 || fl->b.y >= f_h)
     {
-        DEH_fprintf(stderr, "fuck %d \r", fuck++);
+        I_NonfatalError("fuck %d \r", fuck++);
 	return;
-    }
+    }*/
 
-#define PUTDOT(xx,yy,cc) fb[(yy)*f_w+(xx)]=(cc)
+#define PUTDOT(xx,yy,cc) fb[(yy)*f_w+(xx)]=palette_map[(cc)]
 
     dx = fl->b.x - fl->a.x;
     ax = 2 * (dx<0 ? -dx : dx);
@@ -1251,8 +1217,6 @@ void AM_drawPlayers(void)
     int		their_color = -1;
     int		color;
 
-    if (!netgame)
-    {
 	if (cheating)
 	    AM_drawLineCharacter
 		(cheat_player_arrow, arrlen(cheat_player_arrow), 0,
@@ -1262,15 +1226,11 @@ void AM_drawPlayers(void)
 		(player_arrow, arrlen(player_arrow), 0, plr->mo->angle,
 		 WHITE, plr->mo->x, plr->mo->y);
 	return;
-    }
 
     for (i=0;i<MAXPLAYERS;i++)
     {
 	their_color++;
 	p = &players[i];
-
-	if ( (deathmatch && !singledemo) && p != plr)
-	    continue;
 
 	if (!playeringame[i])
 	    continue;
@@ -1323,7 +1283,7 @@ void AM_drawMarks(void)
 	    fx = CXMTOF(markpoints[i].x);
 	    fy = CYMTOF(markpoints[i].y);
 	    if (fx >= f_x && fx <= f_w - w && fy >= f_y && fy <= f_h - h)
-		V_DrawPatch(fx, fy, marknums[i]);
+		V_DrawPatchDiv2All(fx, fy, marknums[i]);
 	}
     }
 
@@ -1331,7 +1291,7 @@ void AM_drawMarks(void)
 
 void AM_drawCrosshair(int color)
 {
-    fb[(f_w*(f_h+1))/2] = color; // single point for now
+    fb[(f_w*(f_h+1))/2] = palette_map[color]; // single point for now
 
 }
 

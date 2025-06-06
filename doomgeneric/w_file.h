@@ -20,7 +20,6 @@
 #ifndef __W_FILE__
 #define __W_FILE__
 
-#include <stdio.h>
 #include "doomtype.h"
 
 typedef struct _wad_file_s wad_file_t;
@@ -30,10 +29,6 @@ typedef struct
     // Open a file for reading.
 
     wad_file_t *(*OpenFile)(char *path);
-
-    // Close the specified file.
-
-    void (*CloseFile)(wad_file_t *file);
 
     // Read data from the specified position in the file into the 
     // provided buffer.  Returns the number of bytes read.
@@ -63,10 +58,6 @@ struct _wad_file_s
 // handle for the WAD file, or NULL if it could not be opened.
 
 wad_file_t *W_OpenFile(char *path);
-
-// Close the specified WAD file.
-
-void W_CloseFile(wad_file_t *wad);
 
 // Read data from the specified file into the provided buffer.  The
 // data is read from the specified offset from the start of the file.

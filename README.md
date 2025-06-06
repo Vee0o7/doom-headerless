@@ -1,67 +1,44 @@
-# doomgeneric
-The purpose of doomgeneric is to make porting Doom easier.
-Of course Doom is already portable but with doomgeneric it is possible with just a few functions.
+# Doom Headerless 
+Doom Headerless is fork of [Doom Generic](https://github.com/ozkl/doomgeneric) made to be easily portable on platforms without C headers. 
+
+This started as port of Doom to game Turing Complete. I started with removing parts that I did not need (Sound, Network, ..), but it is still enough
+to comfortably play `doom1.wad`.
+
+Other features:
+- Fully 32-bit (original Doom Generic uses 64-bit operations for FixedMul/FixedDiv)
+- DIV2 mode to use 160x100 window (normal Doom HUD uses 320x200)
+- CMAP256 - 8-bit color mode with palette remapping
+
+
 
 To try it you will need a WAD file (game data). If you don't own the game, shareware version is freely available (doom1.wad).
 
 # porting
-Create a file named doomgeneric_yourplatform.c and just implement these functions to suit your platform.
-* DG_Init
-* DG_DrawFrame
-* DG_SleepMs
-* DG_GetTicksMs
-* DG_GetKey
+To port Doom Headerless, you have to implement these functions:
 
 |Functions            |Description|
 |---------------------|-----------|
 |DG_Init              |Initialize your platfrom (create window, framebuffer, etc...).
-|DG_DrawFrame         |Frame is ready in DG_ScreenBuffer. Copy it to your platform's screen.
-|DG_SleepMs           |Sleep in milliseconds.
+|DH_remap_palette     |In 8-bit color mode, remap the original colors into colors of your screen, will be faster than converting later
+|DH_setup_screen_info |In x-bit color mode, specify how colors are laid out.
+|DG_DrawFrame         |Frame is ready in DG_ScreenBuffer. Copy it to your platform's screen (Can be empty, if DG_ScreenBuffer points to real screen in correct format).
+|DG_SleepMs           |Sleep in milliseconds (may be empty).
 |DG_GetTicksMs        |The ticks passed since launch in milliseconds.
 |DG_GetKey            |Provide keyboard events.
-|DG_SetWindowTitle    |Not required. This is for setting the window title as Doom sets this from WAD file.
+|DH_read_wad          |Copy bytes from WAD.
+|I_ZoneBase           |One time allocation for Doom allocator. (Point to 8-16 MiB of free memory)
+|malloc_lump_info     |One time allocation.
+|memcpy               |Implement fast memcpy. A lot of time is spent memcpy-ing, so it is better to special case it for your platform.
 
-### main loop
-At start, call doomgeneric_Create().
+What to look at:
+- `doomgeneric_defines.h` defines CMAP256 and DIV2 that influence the screen type.
+- `doomgeneric.h` defines functions that you need to implement and call.
+- `doomgeneric_xlib.c` only remaining implementation that you can test on your machine, intended to be built with either `make doomgeneric` or 'make single_c'
+- `doomgeneric_doom64.c` the main implementation for my custom architecture. Although you cannot compile it or run it, it is most useful as starting point. Intended to be built with `make doom64`.
+- `i_video.c` if `DG_DrawFrame` is too slow and you have untypical display, you may want to modify `I_FinishUpdate` directly.
 
-In a loop, call doomgeneric_Tick().
+## In Turing Complete
+![Turing Complete](screenshots/tc320.png)
 
-In simplest form:
-```
-int main(int argc, char **argv)
-{
-    doomgeneric_Create(argc, argv);
-
-    while (1)
-    {
-        doomgeneric_Tick();
-    }
-    
-    return 0;
-}
-```
-
-# sound
-Sound is much harder to implement! If you need sound, take a look at SDL port. It fully supports sound and music! Where to start? Define FEATURE_SOUND, assign DG_sound_module and DG_music_module.
-
-# platforms
-Ported platforms include Windows, X11, SDL, emscripten. Just look at (doomgeneric_win.c, doomgeneric_xlib.c, doomgeneric_sdl.c).
-Makefiles provided for each platform.
-
-## emscripten
-You can try it directly here:
-https://ozkl.github.io/doomgeneric/
-
-emscripten port is based on SDL port, so it supports sound and music! For music, timidity backend is used.
-
-## Windows
-![Windows](screenshots/windows.png)
-
-## X11 - Ubuntu
-![Ubuntu](screenshots/ubuntu.png)
-
-## X11 - FreeBSD
-![FreeBSD](screenshots/freebsd.png)
-
-## SDL
-![SDL](screenshots/sdl.png)
+## With 160x100 window
+![DIV2 160x100](screenshots/tc160.png)

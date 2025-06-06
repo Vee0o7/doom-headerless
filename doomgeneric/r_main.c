@@ -22,8 +22,8 @@
 
 
 
-#include <stdlib.h>
-#include <math.h>
+#include "include.h"
+#include "doomgeneric.h"
 
 
 #include "doomdef.h"
@@ -417,29 +417,6 @@ R_PointToDist
 
 
 //
-// R_InitPointToAngle
-//
-void R_InitPointToAngle (void)
-{
-    // UNUSED - now getting from tables.c
-#if 0
-    int	i;
-    long	t;
-    float	f;
-//
-// slope (tangent) to angle lookup
-//
-    for (i=0 ; i<=SLOPERANGE ; i++)
-    {
-	f = atan( (float)i/SLOPERANGE )/(3.141592657*2);
-	t = 0xffffffff*f;
-	tantoangle[i] = t;
-    }
-#endif
-}
-
-
-//
 // R_ScaleFromGlobalAngle
 // Returns the texture mapping scale
 //  for the current line (horizontal span)
@@ -495,41 +472,6 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 	scale = 64*FRACUNIT;
 	
     return scale;
-}
-
-
-
-//
-// R_InitTables
-//
-void R_InitTables (void)
-{
-    // UNUSED: now getting from tables.c
-#if 0
-    int		i;
-    float	a;
-    float	fv;
-    int		t;
-    
-    // viewangle tangent table
-    for (i=0 ; i<FINEANGLES/2 ; i++)
-    {
-	a = (i-FINEANGLES/4+0.5)*PI*2/FINEANGLES;
-	fv = FRACUNIT*tan (a);
-	t = fv;
-	finetangent[i] = t;
-    }
-    
-    // finesine table
-    for (i=0 ; i<5*FINEANGLES/4 ; i++)
-    {
-	// OPTIMIZE: mirror...
-	a = (i+0.5)*PI*2/FINEANGLES;
-	t = FRACUNIT*sin (a);
-	finesine[i] = t;
-    }
-#endif
-
 }
 
 
@@ -682,8 +624,13 @@ void R_ExecuteSetViewSize (void)
     }
     else
     {
+#ifndef DIV2
 	scaledviewwidth = setblocks*32;
 	viewheight = (setblocks*168/10)&~7;
+#else
+	scaledviewwidth = SCREENWIDTH/2;
+	viewheight = 84;//SCREENHEIGHT/2;
+#endif
     }
     
     detailshift = setdetail;
@@ -767,21 +714,13 @@ void R_ExecuteSetViewSize (void)
 void R_Init (void)
 {
     R_InitData ();
-    printf (".");
-    R_InitPointToAngle ();
-    printf (".");
-    R_InitTables ();
     // viewwidth / viewheight / detailLevel are set by the defaults
-    printf (".");
 
     R_SetViewSize (screenblocks, detailLevel);
     R_InitPlanes ();
-    printf (".");
     R_InitLightTables ();
-    printf (".");
     R_InitSkyMap ();
     R_InitTranslationTables ();
-    printf (".");
 	
     framecount = 0;
 }

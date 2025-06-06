@@ -21,11 +21,6 @@
 
 #include "doomgeneric.h"
 
-#include <stdarg.h>
-
-//#include <sys/time.h>
-//#include <unistd.h>
-
 
 //
 // I_GetTime

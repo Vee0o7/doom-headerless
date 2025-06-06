@@ -1,10 +1,18 @@
+#define _DEFAULT_SOURCE
+
+#define ONLY_UNIX
+#include <ctype.h>
+
+#include "include.h"
+
 #include "doomkeys.h"
 
 #include "doomgeneric.h"
+#include "i_video.h"
 
-#include <ctype.h>
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
+
 #include <unistd.h>
 #include <sys/time.h>
 
@@ -29,6 +37,18 @@ static unsigned char convertToDoomKey(unsigned int key)
 {
 	switch (key)
 	{
+    case 'a':
+        key = KEY_STRAFE_L;
+        break;
+    case 'd':
+        key = KEY_STRAFE_R;
+        break;
+    case 'w':
+        key = KEY_UPARROW;
+        break;
+    case 's':
+        key = KEY_DOWNARROW;
+        break;
     case XK_Return:
 		key = KEY_ENTER;
 		break;
@@ -79,6 +99,8 @@ static void addKeyToQueue(int pressed, unsigned int keyCode)
 
 void DG_Init()
 {
+	DG_ScreenBuffer = malloc(DOOMGENERIC_RESX * DOOMGENERIC_RESY * 4);
+
 	memset(s_KeyQueue, 0, KEYQUEUE_SIZE * sizeof(unsigned short));
 
     // window creation
@@ -136,14 +158,12 @@ void DG_DrawFrame()
             if (e.type == KeyPress)
             {
                 KeySym sym = XkbKeycodeToKeysym(s_Display, e.xkey.keycode, 0, 0);
-                //printf("KeyPress:%d sym:%d\n", e.xkey.keycode, sym);
 
                 addKeyToQueue(1, sym);
             }
             else if (e.type == KeyRelease)
             {
                 KeySym sym = XkbKeycodeToKeysym(s_Display, e.xkey.keycode, 0, 0);
-                //printf("KeyRelease:%d sym:%d\n", e.xkey.keycode, sym);
                 addKeyToQueue(0, sym);
             }
         }
@@ -152,8 +172,21 @@ void DG_DrawFrame()
 
         //XFlush(s_Display);
     }
+}
+void DH_remap_palette(uint8_t remap[256]) {}
 
-    //printf("frame\n");
+void DH_setup_screen_info (struct FB_ScreenInfo* s_Fb) {
+	s_Fb->bits_per_pixel = 32;
+
+	s_Fb->blue.length = 8;
+	s_Fb->green.length = 8;
+	s_Fb->red.length = 8;
+	s_Fb->transp.length = 8;
+
+	s_Fb->blue.offset = 0;
+	s_Fb->green.offset = 8;
+	s_Fb->red.offset = 16;
+	s_Fb->transp.offset = 24;
 }
 
 void DG_SleepMs(uint32_t ms)
@@ -192,22 +225,44 @@ int DG_GetKey(int* pressed, unsigned char* doomKey)
 	}
 }
 
-void DG_SetWindowTitle(const char * title)
-{
-    if (s_Window)
-    {
-      XChangeProperty(s_Display, s_Window, XA_WM_NAME, XA_STRING, 8, PropModeReplace, (const unsigned char *)title, strlen(title));
-    }
-}
-
+FILE *file_wad;
 int main(int argc, char **argv)
 {
-    doomgeneric_Create(argc, argv);
+    file_wad = fopen("/usr/share/games/doom/doom1.wad", "rb");
+    if (file_wad == NULL) {
+			return 1;
+		}
 
-    while(1)
-    {
+    char* args[] = {"./doomgeneric", "-iwad", "/usr/share/games/doom/doom1.wad"};
+    doomgeneric_Create(3, args);
+
+    while(1) {
       doomgeneric_Tick(); 
     }
 
     return 0;
+}
+
+// Read data from the specified position in WAD into the 
+// provided buffer.
+
+void DH_read_wad(unsigned int offset, void *buffer, size_t buffer_len) {
+    // Jump to the specified position in the file.
+    fseek(file_wad, offset, SEEK_SET);
+
+    // Read into the buffer.
+    fread(buffer, 1, buffer_len, file_wad);
+}
+
+uint8_t* I_ZoneBase (int *size) {
+    *size = 8 * 1024 * 1024;
+    return malloc (*size);
+}
+
+void* malloc_lump_info (size_t s) {
+    return malloc (s);
+}
+
+void halt() {
+    exit(1);
 }

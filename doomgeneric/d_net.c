@@ -17,9 +17,7 @@
 //	all OS independend parts.
 //
 
-#include <stdlib.h>
-
-#include "doomfeatures.h"
+#include "include.h"
 
 #include "d_main.h"
 #include "m_argv.h"
@@ -31,7 +29,6 @@
 #include "g_game.h"
 #include "doomdef.h"
 #include "doomstat.h"
-#include "w_checksum.h"
 #include "w_wad.h"
 
 #include "deh_main.h"
@@ -40,53 +37,11 @@
 
 ticcmd_t *netcmds;
 
-// Called when a player leaves the game
-
-static void PlayerQuitGame(player_t *player)
-{
-    static char exitmsg[80];
-    unsigned int player_num;
-
-    player_num = player - players;
-
-    // Do this the same way as Vanilla Doom does, to allow dehacked
-    // replacements of this message
-
-    M_StringCopy(exitmsg, DEH_String("Player 1 left the game"),
-                 sizeof(exitmsg));
-
-    exitmsg[7] += player_num;
-
-    playeringame[player_num] = false;
-    players[consoleplayer].message = exitmsg;
-
-    // TODO: check if it is sensible to do this:
-
-    if (demorecording) 
-    {
-        G_CheckDemoStatus ();
-    }
-}
-
 static void RunTic(ticcmd_t *cmds, boolean *ingame)
 {
     extern boolean advancedemo;
-    unsigned int i;
-
-    // Check for player quits.
-
-    for (i = 0; i < MAXPLAYERS; ++i)
-    {
-        if (!demoplayback && playeringame[i] && !ingame[i])
-        {
-            PlayerQuitGame(&players[i]);
-        }
-    }
 
     netcmds = cmds;
-
-    // check that there are players in the game.  if not, we cannot
-    // run a tic.
 
     if (advancedemo)
         D_DoAdvanceDemo ();
@@ -109,11 +64,9 @@ static void LoadGameSettings(net_gamesettings_t *settings)
 {
     unsigned int i;
 
-    deathmatch = settings->deathmatch;
     startepisode = settings->episode;
     startmap = settings->map;
     startskill = settings->skill;
-    startloadgame = settings->loadgame;
     lowres_turn = settings->lowres_turn;
     nomonsters = settings->nomonsters;
     fastparm = settings->fast_monsters;
@@ -123,7 +76,7 @@ static void LoadGameSettings(net_gamesettings_t *settings)
 
     if (lowres_turn)
     {
-        printf("NOTE: Turning resolution is reduced; this is probably "
+        I_Info("NOTE: Turning resolution is reduced; this is probably "
                "because there is a client recording a Vanilla demo.\n");
     }
 
@@ -141,11 +94,9 @@ static void SaveGameSettings(net_gamesettings_t *settings)
     // Fill in game settings structure with appropriate parameters
     // for the new game
 
-    settings->deathmatch = deathmatch;
     settings->episode = startepisode;
     settings->map = startmap;
     settings->skill = startskill;
-    settings->loadgame = startloadgame;
     settings->gameversion = gameversion;
     settings->nomonsters = nomonsters;
     settings->fast_monsters = fastparm;
@@ -156,83 +107,6 @@ static void SaveGameSettings(net_gamesettings_t *settings)
                          && M_CheckParm("-longtics") == 0;
 }
 
-static void InitConnectData(net_connect_data_t *connect_data)
-{
-    connect_data->max_players = MAXPLAYERS;
-    connect_data->drone = false;
-
-    //!
-    // @category net
-    //
-    // Run as the left screen in three screen mode.
-    //
-
-    if (M_CheckParm("-left") > 0)
-    {
-        viewangleoffset = ANG90;
-        connect_data->drone = true;
-    }
-
-    //! 
-    // @category net
-    //
-    // Run as the right screen in three screen mode.
-    //
-
-    if (M_CheckParm("-right") > 0)
-    {
-        viewangleoffset = ANG270;
-        connect_data->drone = true;
-    }
-
-    //
-    // Connect data
-    //
-
-    // Game type fields:
-
-    connect_data->gamemode = gamemode;
-    connect_data->gamemission = gamemission;
-
-    // Are we recording a demo? Possibly set lowres turn mode
-
-    connect_data->lowres_turn = M_CheckParm("-record") > 0
-                             && M_CheckParm("-longtics") == 0;
-
-    // Read checksums of our WAD directory and dehacked information
-
-    W_Checksum(connect_data->wad_sha1sum);
-
-#if ORIGCODE
-    DEH_Checksum(connect_data->deh_sha1sum);
-#endif
-
-    // Are we playing with the Freedoom IWAD?
-
-    connect_data->is_freedoom = W_CheckNumForName("FREEDOOM") >= 0;
-}
-
-void D_ConnectNetGame(void)
-{
-    net_connect_data_t connect_data;
-
-    InitConnectData(&connect_data);
-    netgame = D_InitNetGame(&connect_data);
-
-    //!
-    // @category net
-    //
-    // Start the game playing as though in a netgame with a single
-    // player.  This can also be used to play back single player netgame
-    // demos.
-    //
-
-    if (M_CheckParm("-solo-net") > 0)
-    {
-        netgame = true;
-    }
-}
-
 //
 // D_CheckNetGame
 // Works out player numbers among the net participants
@@ -241,41 +115,13 @@ void D_CheckNetGame (void)
 {
     net_gamesettings_t settings;
 
-    if (netgame)
-    {
-        autostart = true;
-    }
-
     D_RegisterLoopCallbacks(&doom_loop_interface);
 
     SaveGameSettings(&settings);
     D_StartNetGame(&settings, NULL);
     LoadGameSettings(&settings);
 
-    DEH_printf("startskill %i  deathmatch: %i  startmap: %i  startepisode: %i\n",
-               startskill, deathmatch, startmap, startepisode);
-
-    DEH_printf("player %i of %i (%i nodes)\n",
-               consoleplayer+1, settings.num_players, settings.num_players);
-
-    // Show players here; the server might have specified a time limit
-
-    if (timelimit > 0 && deathmatch)
-    {
-        // Gross hack to work like Vanilla:
-
-        if (timelimit == 20 && M_CheckParm("-avg"))
-        {
-            DEH_printf("Austin Virtual Gaming: Levels will end "
-                           "after 20 minutes\n");
-        }
-        else
-        {
-            DEH_printf("Levels will end after %d minute", timelimit);
-            if (timelimit > 1)
-                printf("s");
-            printf(".\n");
-        }
-    }
+    I_Info("startskill %i  startmap: %i  startepisode: %i\n",
+               startskill, startmap, startepisode);
 }
 

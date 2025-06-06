@@ -16,8 +16,6 @@
 //
 
 
-#include <ctype.h>
-
 #include "doomdef.h"
 #include "doomkeys.h"
 
@@ -113,7 +111,7 @@ HUlib_drawTextLine
 	    w = SHORT(l->f[c - l->sc]->width);
 	    if (x+w > SCREENWIDTH)
 		break;
-	    V_DrawPatchDirect(x, l->y, l->f[c - l->sc]);
+	    V_DrawPatchDiv2All(x, l->y, l->f[c - l->sc]);
 	    x += w;
 	}
 	else
@@ -128,7 +126,7 @@ HUlib_drawTextLine
     if (drawcursor
 	&& x + SHORT(l->f['_' - l->sc]->width) <= SCREENWIDTH)
     {
-	V_DrawPatchDirect(x, l->y, l->f['_' - l->sc]);
+	V_DrawPatchDiv2All(x, l->y, l->f['_' - l->sc]);
     }
 }
 
@@ -302,28 +300,6 @@ HUlib_addPrefixToIText
     while (*str)
 	HUlib_addCharToTextLine(&it->l, *(str++));
     it->lm = it->l.len;
-}
-
-// wrapper function for handling general keyed input.
-// returns true if it ate the key
-boolean
-HUlib_keyInIText
-( hu_itext_t*	it,
-  unsigned char ch )
-{
-    ch = toupper(ch);
-
-    if (ch >= ' ' && ch <= '_') 
-  	HUlib_addCharToTextLine(&it->l, (char) ch);
-    else 
-	if (ch == KEY_BACKSPACE) 
-	    HUlib_delCharFromIText(it);
-	else 
-	    if (ch != KEY_ENTER) 
-		return false; // did not eat key
-
-    return true; // ate the key
-
 }
 
 void HUlib_drawIText(hu_itext_t* it)

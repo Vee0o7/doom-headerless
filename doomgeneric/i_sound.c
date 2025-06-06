@@ -15,20 +15,11 @@
 // DESCRIPTION:  none
 //
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#if defined(FEATURE_SOUND) && !defined(__DJGPP__)
-#include <SDL_mixer.h>
-#endif
+#include "include.h"
 
 #include "config.h"
-#include "doomfeatures.h"
 #include "doomtype.h"
 
-#ifdef ORIGCODE
-#include "gusconf.h"
-#endif
 #include "i_sound.h"
 #include "i_video.h"
 #include "m_argv.h"
@@ -394,8 +385,10 @@ boolean I_MusicIsPlaying(void)
 
 void I_BindSoundVariables(void)
 {
+#ifdef FEATURE_SOUND
     extern int use_libsamplerate;
     extern float libsamplerate_scale;
+#endif
 
     M_BindVariable("snd_musicdevice",   &snd_musicdevice);
     M_BindVariable("snd_sfxdevice",     &snd_sfxdevice);

@@ -18,7 +18,7 @@
 
 
 
-#include <string.h>
+#include "include.h"
 
 #include "doomtype.h"
 #include "m_cheat.h"

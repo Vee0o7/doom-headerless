@@ -34,8 +34,6 @@ void I_Init (void);
 // for the zone management.
 byte*	I_ZoneBase (int *size);
 
-boolean I_ConsoleStdout(void);
-
 
 // Asynchronous interrupt functions should maintain private queues
 // that are read by the synchronous functions
@@ -52,8 +50,6 @@ ticcmd_t* I_BaseTiccmd (void);
 // Clean exit, displays sell blurb.
 void I_Quit (void);
 
-void I_Error (char *error, ...);
-
 void I_Tactile (int on, int off, int total);
 
 boolean I_GetMemoryValue(unsigned int offset, void *value, int size);
@@ -67,10 +63,6 @@ void I_AtExit(atexit_func_t func, boolean run_if_error);
 // Add all system-specific config file variable bindings.
 
 void I_BindVariables(void);
-
-// Print startup banner copyright message.
-
-void I_PrintStartupBanner(char *gamedescription);
 
 // Print a centered text banner displaying the given string.
 
