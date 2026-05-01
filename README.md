@@ -33,7 +33,7 @@ To port Doom Headerless, you have to implement these functions:
 What to look at:
 - `doomgeneric_defines.h` defines CMAP256 and DIV2 that influence the screen type.
 - `doomgeneric.h` defines functions that you need to implement and call.
-- `doomgeneric_xlib.c` only remaining implementation that you can test on your machine, intended to be built with either `make doomgeneric` or 'make single_c'
+- `doomgeneric_xlib.c` only remaining implementation that you can test on your machine, intended to be built with either `make doomgeneric` or `make single_c`
 - `doomgeneric_doom64.c` the main implementation for my custom architecture. Although you cannot compile it or run it, it is most useful as starting point. Intended to be built with `make doom64`.
 - `i_video.c` if `DG_DrawFrame` is too slow and you have untypical display, you may want to modify `I_FinishUpdate` directly.
 
