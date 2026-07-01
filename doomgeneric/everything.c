@@ -1,6 +1,11 @@
 #ifdef DOOM64
 #include "doomgeneric_doom64.c"
 #endif
+
+#ifdef DOOM32IM
+#include "doomgeneric_rv32im.c"
+#endif /* ifndef DOOM32IM */
+
 #include "am_map.c"
 #include "d_event.c"
 #include "d_items.c"

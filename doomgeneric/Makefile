@@ -12,7 +12,7 @@ else
 endif
 
 
-CC=gcc
+CC=riscv32-none-elf-gcc
 CFLAGS+=-g -Os -std=c11 -ffunction-sections
 LDFLAGS+=-Wl,--gc-sections #,--print-gc-sections
 CFLAGS+=-g -DNORMALUNIX -DLINUX -DSNDSERV -D_DEFAULT_SOURCE # -DUSEASM
@@ -28,16 +28,26 @@ OBJS += $(addprefix $(OBJDIR)/, $(SRC_DOOM))
 all:	 $(OUTPUT)
 
 single_c:
-	gcc -o doom -Os -std=c11 everything.c doomgeneric_xlib.c -lX11
+	$(CC) -o doom -Os -std=c11 everything.c doomgeneric_xlib.c -lX11
 
 doom64:
 	~/git/GCC/install_doom64/bin/doom64-unknown-elf-gcc -Os -std=gnu11 everything.c -DDOOM64 -S -fno-strict-aliasing
+
+doomrv32im: rv32Funcs.s everything.c
+	$(CC) -nostdlib -mlittle-endian -march=rv32im -mabi=ilp32 -Os -std=gnu11 $^ -DDOOM32IM  -fno-strict-aliasing -o $@ -T rv32imLinker.ld
+
+doomrv32im.s: everything.c
+	$(CC) -nostdlib -mlittle-endian -march=rv32im -mabi=ilp32 -Os -std=gnu11 $^ -DDOOM32IM  -fno-strict-aliasing -o $@ -S
+
+rv32Funcs.o: rv32Funcs.s
+	$(CC) -nostdlib -mlittle-endian -march=rv32im -mabi=ilp32 -Os -std=gnu11 $^ -DDOOM32IM  -fno-strict-aliasing -o $@
 
 clean:
 	rm -rf $(OBJDIR)
 	rm -f $(OUTPUT)
 	rm -f $(OUTPUT).gdb
 	rm -f $(OUTPUT).map
+	rm -f doomrv32im*
 
 $(OUTPUT):	$(OBJS)
 	@echo [Linking $@]

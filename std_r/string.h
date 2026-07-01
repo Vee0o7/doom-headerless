@@ -2,7 +2,10 @@
 #define STRING_H
 
 #ifndef DOOM64
+#ifndef DOOM32IM
 #define memset __memset
+
+#endif // !DOOM32IM
 #endif
 
 __attribute__((used))
